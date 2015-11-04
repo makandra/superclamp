@@ -1,3 +1,8 @@
+###!
+ * Superclamp 0.1.0
+ * https://github.com/makandra/superclamp
+###
+
 LOG = false
 DEBUG = false
 

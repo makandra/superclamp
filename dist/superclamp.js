@@ -1,3 +1,9 @@
+
+/*!
+ * Superclamp 0.1.0
+ * https://github.com/makandra/superclamp
+ */
+
 (function() {
   var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
