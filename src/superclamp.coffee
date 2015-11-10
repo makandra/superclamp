@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.1.0
+ * Superclamp 0.1.1
  * https://github.com/makandra/superclamp
 ###
 
@@ -35,6 +35,7 @@ $.fn.clamp = ->
   @each ->
     Superclamp.clamp(this)
   drainQueue()
+  @
 
 $ ->
   $(document).on UPDATE_EVENT_NAME, Superclamp.reclampAll
@@ -50,8 +51,8 @@ class @Superclamp
     instance = $element.data(INSTANCE_KEY) || new Superclamp($element)
     instance.clamp()
 
-  @reclampAll: ->
-    for element in $("[#{READY_ATTRIBUTE_NAME}]")
+  @reclampAll: (container = document) ->
+    for element in $(container).find("[#{READY_ATTRIBUTE_NAME}]")
       Superclamp.clamp(element)
     drainQueue()
 

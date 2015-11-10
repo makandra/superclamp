@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.1.0
+ * Superclamp 0.1.1
  * https://github.com/makandra/superclamp
  */
 
@@ -37,7 +37,8 @@
     this.each(function() {
       return Superclamp.clamp(this);
     });
-    return drainQueue();
+    drainQueue();
+    return this;
   };
 
   $(function() {
@@ -53,9 +54,12 @@
       return instance.clamp();
     };
 
-    Superclamp.reclampAll = function() {
+    Superclamp.reclampAll = function(container) {
       var element, i, len, ref;
-      ref = $("[" + READY_ATTRIBUTE_NAME + "]");
+      if (container == null) {
+        container = document;
+      }
+      ref = $(container).find("[" + READY_ATTRIBUTE_NAME + "]");
       for (i = 0, len = ref.length; i < len; i++) {
         element = ref[i];
         Superclamp.clamp(element);
