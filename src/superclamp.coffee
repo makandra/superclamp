@@ -1,11 +1,12 @@
 ###!
- * Superclamp 0.1.1
+ * Superclamp 0.1.2
  * https://github.com/makandra/superclamp
 ###
 
 LOG = false
 DEBUG = false
 
+DONE_EVENT_NAME = 'superclamp:done' # We trigger this whenever we've clamped an element, and only if (re)clamping was necessary
 UPDATE_EVENT_NAME = 'superclamp:update' # We listen to this, and then reclamp all known elements (if necessary)
 
 INSTANCE_KEY = 'superclamp:instance'
@@ -91,6 +92,7 @@ class @Superclamp
       @_storeDistance()
       queue 'layout', =>
         @$ellipsis.toggleClass('is-not-required', allFit)
+        @$element.trigger(DONE_EVENT_NAME)
 
   _getEllipsisAt: =>
     getPosition(@$ellipsis)

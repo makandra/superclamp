@@ -1,17 +1,19 @@
 
 /*!
- * Superclamp 0.1.1
+ * Superclamp 0.1.2
  * https://github.com/makandra/superclamp
  */
 
 (function() {
-  var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
+  var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     slice = [].slice;
 
   LOG = false;
 
   DEBUG = false;
+
+  DONE_EVENT_NAME = 'superclamp:done';
 
   UPDATE_EVENT_NAME = 'superclamp:update';
 
@@ -117,7 +119,8 @@
         return function(allFit) {
           _this._storeDistance();
           return queue('layout', function() {
-            return _this.$ellipsis.toggleClass('is-not-required', allFit);
+            _this.$ellipsis.toggleClass('is-not-required', allFit);
+            return _this.$element.trigger(DONE_EVENT_NAME);
           });
         };
       })(this));
