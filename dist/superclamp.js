@@ -1,11 +1,11 @@
 
 /*!
- * Superclamp 0.1.2
+ * Superclamp 0.1.3
  * https://github.com/makandra/superclamp
  */
 
 (function() {
-  var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
+  var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, getStoredDimensions, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     slice = [].slice;
 
@@ -80,11 +80,11 @@
       this._clampThis = bind(this._clampThis, this);
       this._storeDistance = bind(this._storeDistance, this);
       this._updateElementAt = bind(this._updateElementAt, this);
+      this._updateEllipsisSize = bind(this._updateEllipsisSize, this);
       debug('initialize', this.$element);
       spaceNode = document.createTextNode(' ');
       this.$ellipsis = $('<span class="clamp-ellipsis">…</span>');
       this.$element.append(spaceNode, this.$ellipsis);
-      storeDimensions(this.$ellipsis);
       this.$element.data(INSTANCE_KEY, this);
       this.$element.attr(READY_ATTRIBUTE_NAME, true);
     }
@@ -92,6 +92,7 @@
     Superclamp.prototype.clamp = function() {
       return queue('query', (function(_this) {
         return function() {
+          _this._updateEllipsisSize();
           _this._updateElementAt();
           if (_this._unchanged()) {
             return debug('unchanged', _this.$element);
@@ -100,6 +101,10 @@
           }
         };
       })(this));
+    };
+
+    Superclamp.prototype._updateEllipsisSize = function() {
+      return storeDimensions(this.$ellipsis);
     };
 
     Superclamp.prototype._updateElementAt = function() {
@@ -182,7 +187,7 @@
                       if (fits) {
                         return callbackOnDone(allFit);
                       } else {
-                        node.nodeValue = prefix.replace(/ $/, '');
+                        node.nodeValue = prefix.replace(RegExp(' $'), '');
                         return callbackOnDone(false);
                       }
                     };
@@ -305,12 +310,17 @@
     height = $node.height();
     width = $node.width();
     $node.data(DIMENSIONS_KEY, [width, height]);
-    return debug('storeDimensions', width, height);
+    debug('storeDimensions', width, height);
+    return [width, height];
+  };
+
+  getStoredDimensions = function($node) {
+    return $node.data(DIMENSIONS_KEY);
   };
 
   getPosition = function($node) {
     var height, position, ref, width;
-    ref = $node.data(DIMENSIONS_KEY) || [$node.width(), $node.height()], width = ref[0], height = ref[1];
+    ref = getStoredDimensions($node) || [$node.width(), $node.height()], width = ref[0], height = ref[1];
     position = {
       top: $node.prop('offsetTop'),
       left: $node.prop('offsetLeft')
@@ -326,16 +336,38 @@
   };
 
   getInnerPosition = function($node) {
-    var position;
-    position = {
-      top: $node.prop('offsetTop'),
-      left: $node.prop('offsetLeft')
+    var borderBoxSizing, borderWidth, height, left, padding, top, width;
+    borderBoxSizing = $node.css('box-sizing') === 'border-box';
+    top = $node.prop('offsetTop');
+    left = $node.prop('offsetLeft');
+    height = parseInt($node.css('max-height')) || parseInt($node.css('height'));
+    width = parseInt($node.css('max-width')) || parseInt($node.css('width'));
+    if (borderBoxSizing) {
+      padding = {
+        top: parseInt($node.css('padding-top')) || 0,
+        left: parseInt($node.css('padding-left')) || 0,
+        right: parseInt($node.css('padding-right')) || 0,
+        bottom: parseInt($node.css('padding-bottom')) || 0
+      };
+      borderWidth = {
+        top: parseInt($node.css('border-top-width')) || 0,
+        left: parseInt($node.css('border-left-width')) || 0,
+        right: parseInt($node.css('border-right-width')) || 0,
+        bottom: parseInt($node.css('border-bottom-width')) || 0
+      };
+      top += padding.top + borderWidth.top;
+      left += padding.left + borderWidth.left;
+      width -= padding.left + padding.right + borderWidth.left + borderWidth.right;
+      height -= padding.top + padding.bottom + borderWidth.top + borderWidth.bottom;
+    }
+    return {
+      top: top,
+      left: left,
+      right: left + width,
+      bottom: top + height,
+      width: width,
+      height: height
     };
-    position.top += parseInt($node.css('padding-top'));
-    position.left += parseInt($node.css('padding-left'));
-    position.bottom = position.top + $node.height();
-    position.right = position.left + $node.width();
-    return position;
   };
 
   getFragmentData = function(textNode) {

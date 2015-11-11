@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.1.2
+ * Superclamp 0.1.3
  * https://github.com/makandra/superclamp
 ###
 
@@ -64,19 +64,26 @@ class @Superclamp
     @$ellipsis = $('<span class="clamp-ellipsis">…</span>')
     @$element.append(spaceNode, @$ellipsis)
 
-    storeDimensions(@$ellipsis)
-
     @$element.data(INSTANCE_KEY, @)
     @$element.attr(READY_ATTRIBUTE_NAME, true)
 
   clamp: ->
     queue 'query', =>
+      # When reclamping, we want to recompute ellipsis dimensions as the
+      # font face/size may have changed. Its dimensions are required to
+      # properly calculate if our contents have changed.
+      # We also need to update our element position to compare against.
+      @_updateEllipsisSize()
       @_updateElementAt()
+
       if @_unchanged()
         debug 'unchanged', @$element
         # no need to (re)clamp
       else
         @_clampThis()
+
+  _updateEllipsisSize: =>
+    storeDimensions(@$ellipsis)
 
   _updateElementAt: =>
     @elementAt = getInnerPosition(@$element)
@@ -139,7 +146,7 @@ class @Superclamp
                 if fits
                   callbackOnDone(allFit)
                 else
-                  node.nodeValue = prefix.replace(/ $/, '')
+                  node.nodeValue = prefix.replace(RegExp(' $'), '')
                   callbackOnDone(false)
           else
             # Descend into DOM node to clamp its contents
@@ -221,9 +228,13 @@ storeDimensions = ($node) ->
   width = $node.width()
   $node.data(DIMENSIONS_KEY, [width, height])
   debug 'storeDimensions', width, height
+  [width, height]
+
+getStoredDimensions = ($node) ->
+  $node.data(DIMENSIONS_KEY)
 
 getPosition = ($node) ->
-  [width, height] = $node.data(DIMENSIONS_KEY) || [$node.width(), $node.height()]
+  [width, height] = getStoredDimensions($node) || [$node.width(), $node.height()]
   position =
     top: $node.prop('offsetTop')
     left: $node.prop('offsetLeft')
@@ -233,14 +244,40 @@ getPosition = ($node) ->
   position
 
 getInnerPosition = ($node) ->
-  position =
-    top: $node.prop('offsetTop')
-    left: $node.prop('offsetLeft')
-  position.top += parseInt($node.css('padding-top'))
-  position.left += parseInt($node.css('padding-left'))
-  position.bottom = position.top + $node.height()
-  position.right = position.left + $node.width()
-  position
+  borderBoxSizing = $node.css('box-sizing') == 'border-box'
+
+  top = $node.prop('offsetTop')
+  left = $node.prop('offsetLeft')
+
+  # To compute the fillable inner area, we consider the element's maximum
+  # width/height, if available. This allows handling growing elements.
+  height = parseInt($node.css('max-height')) || parseInt($node.css('height'))
+  width = parseInt($node.css('max-width')) || parseInt($node.css('width'))
+
+  if borderBoxSizing
+    # When an element's box-sizing is set to "border-box", its padding and
+    # borders are included in its width/height.
+    padding =
+      top: parseInt($node.css('padding-top')) || 0
+      left: parseInt($node.css('padding-left')) || 0
+      right: parseInt($node.css('padding-right')) || 0
+      bottom: parseInt($node.css('padding-bottom')) || 0
+    borderWidth =
+      top: parseInt($node.css('border-top-width')) || 0
+      left: parseInt($node.css('border-left-width')) || 0
+      right: parseInt($node.css('border-right-width')) || 0
+      bottom: parseInt($node.css('border-bottom-width')) || 0
+    top += (padding.top + borderWidth.top)
+    left += (padding.left + borderWidth.left)
+    width -= (padding.left + padding.right + borderWidth.left + borderWidth.right)
+    height -= (padding.top + padding.bottom + borderWidth.top + borderWidth.bottom)
+
+  top: top
+  left: left
+  right: left + width
+  bottom: top + height
+  width: width
+  height: height
 
 getFragmentData = (textNode) ->
   $parent = $(textNode.parentNode)
