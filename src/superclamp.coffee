@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.1.3
+ * Superclamp 0.1.4
  * https://github.com/makandra/superclamp
 ###
 
@@ -52,10 +52,16 @@ class @Superclamp
     instance = $element.data(INSTANCE_KEY) || new Superclamp($element)
     instance.clamp()
 
-  @reclampAll: (container = document) ->
-    for element in $(container).find("[#{READY_ATTRIBUTE_NAME}]")
+  @reclampAll: (container) ->
+    # If no container element or an event was given, reclamp the entire document.
+    container = document if !container? || container.currentTarget?
+
+    $container = $(container)
+    for element in $container.find("[#{READY_ATTRIBUTE_NAME}]")
       Superclamp.clamp(element)
     drainQueue()
+
+    return $container
 
   constructor: (@$element) ->
     debug 'initialize', @$element

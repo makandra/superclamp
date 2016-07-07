@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.1.3
+ * Superclamp 0.1.4
  * https://github.com/makandra/superclamp
  */
 
@@ -57,16 +57,18 @@
     };
 
     Superclamp.reclampAll = function(container) {
-      var element, i, len, ref;
-      if (container == null) {
+      var $container, element, i, len, ref;
+      if ((container == null) || (container.currentTarget != null)) {
         container = document;
       }
-      ref = $(container).find("[" + READY_ATTRIBUTE_NAME + "]");
+      $container = $(container);
+      ref = $container.find("[" + READY_ATTRIBUTE_NAME + "]");
       for (i = 0, len = ref.length; i < len; i++) {
         element = ref[i];
         Superclamp.clamp(element);
       }
-      return drainQueue();
+      drainQueue();
+      return $container;
     };
 
     function Superclamp($element1) {
