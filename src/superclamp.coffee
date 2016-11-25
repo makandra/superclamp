@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.1.4
+ * Superclamp 0.1.5
  * https://github.com/makandra/superclamp
 ###
 
@@ -312,7 +312,7 @@ getFragments = (textNode) ->
 initializeTextNode = (textNode) ->
   unless getFragments(textNode)?
     # happens only once, so our nodeValue was not changed
-    setFragments textNode, textNode.nodeValue.split(/\s+/)
+    setFragments textNode, textNode.nodeValue.split(/[ \t\r\n]+/)
   textNode
 
 getContents = ($node) ->

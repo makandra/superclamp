@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.1.4
+ * Superclamp 0.1.5
  * https://github.com/makandra/superclamp
  */
 
@@ -402,7 +402,7 @@
 
   initializeTextNode = function(textNode) {
     if (getFragments(textNode) == null) {
-      setFragments(textNode, textNode.nodeValue.split(/\s+/));
+      setFragments(textNode, textNode.nodeValue.split(/[ \t\r\n]+/));
     }
     return textNode;
   };
