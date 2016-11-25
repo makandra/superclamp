@@ -2,9 +2,13 @@
 <html>
 <head>
   <meta charset='utf-8'>
+  <meta content='width=device-width, initial-scale=1' name='viewport'>
   <script src="lib/jquery-1.11.3.js"></script>
   <script src="../dist/superclamp.js"></script>
   <style>
+    h2 {
+      margin: 0.5em 0 0.1em;
+    }
     .clamp-me {
       box-sizing: border-box;
       outline: 1px dashed red;
@@ -15,6 +19,7 @@
   </style>
 </head>
 <body>
+<h2>Simple text</h2>
 <div class="clamp-me">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
   Quisque hendrerit turpis sit amet enim auctor, sed posuere libero hendrerit. In ante justo, dignissim eget sapien eu, interdum pulvinar erat. Vestibulum non fermentum mi, ut convallis libero. Proin pretium quam metus, a vehicula est faucibus in. Quisque condimentum neque turpis, eget fringilla sapien ullamcorper ut. Donec diam dolor, venenatis ac finibus sed, laoreet vel enim. Fusce vel magna enim. Proin auctor erat ut lectus hendrerit feugiat. In et velit vel massa tincidunt vehicula. Ut vulputate lacus neque, sit amet porttitor purus tempor quis. Duis ipsum velit, commodo non leo sed, tincidunt sodales lectus. Aliquam nec lorem sem. Etiam commodo elit ac tincidunt pretium. Vestibulum eget augue quis justo lacinia pulvinar. Praesent interdum, velit nec cursus maximus, tellus massa aliquam velit, sit amet finibus nibh purus id libero.
@@ -22,7 +27,7 @@
   Pellentesque ut fringilla lacus. Donec posuere efficitur odio quis feugiat. Suspendisse non sollicitudin orci. Vestibulum at ornare eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam in justo a nisl tristique hendrerit vel sit amet urna. Ut posuere tortor ornare sagittis commodo. Proin placerat leo eu convallis dictum. Quisque finibus quam a ipsum rutrum lacinia. Mauris condimentum tristique lorem, nec varius quam convallis at. Donec sed elementum tortor. Mauris neque odio, interdum in ullamcorper eu, tincidunt sit amet sem. Donec eu pulvinar sem.
   Etiam in nisl sed lorem venenatis cursus. Morbi ultrices interdum ipsum, non viverra tellus dictum non. Fusce vitae lacinia purus. Vestibulum eu libero eget odio venenatis malesuada. Nulla ligula purus, facilisis vel venenatis vel, ornare euismod lorem. Sed lacinia fermentum sem, quis posuere urna aliquam non. Fusce et sagittis mauris, non lacinia metus.
 </div>
-<!--&lt;!&ndash;-->
+<h2>Text including tags</h2>
 <div class="clamp-me">
   <b>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
@@ -36,11 +41,13 @@
   Etiam in nisl sed lorem venenatis cursus. Morbi ultrices interdum ipsum, non viverra tellus dictum non. Fusce vitae lacinia purus. Vestibulum eu libero eget odio venenatis malesuada. Nulla ligula purus, facilisis vel venenatis vel, ornare euismod lorem. Sed lacinia fermentum sem, quis posuere urna aliquam non. Fusce et sagittis mauris, non lacinia metus.
   </span>
 </div>
+<h2>Short text (only clamped on narrow screens)</h2>
 <div class="clamp-me">
   <b>Short text that fits default size.</b>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
   <b>(end)</b>
 </div>
+<h2>Another text including tags (lots)</h2>
 <div class="clamp-me">
   <span>Pellentesque ut fringilla</span> <span>lacus. Donec posuere</span> <span>efficitur odio quis</span> <span>feugiat. Suspendisse non</span> <span>sollicitudin orci. Vestibulum</span> <span>at ornare eros.</span> <span>Cum sociis natoque</span> <span>penatibus et magnis</span> <span>dis parturient montes,</span> <span>nascetur ridiculus mus.</span> <span>Aliquam in justo</span> <span>a nisl tristique</span> <span>hendrerit vel sit</span> <span>amet urna. Ut</span> <span>posuere tortor ornare</span> <span>sagittis commodo. Proin</span> <span>placerat leo eu</span> <span>convallis dictum. Quisque</span> <span>finibus quam a</span> <span>ipsum rutrum lacinia.</span> <span>Mauris condimentum tristique</span> <span>lorem, nec varius</span> <span>quam convallis at.</span> <span>Donec sed elementum</span> <span>tortor. Mauris neque</span> <span>odio, interdum in</span> <span>ullamcorper eu, tincidunt</span> <span>sit amet sem.</span> <span>Donec eu pulvinar</span> sem.
   <span>Lorem</span> <span>ipsum</span> <span>dolor</span> <span>sit</span> <span>amet,</span> <span>consectetur</span> <span>adipiscing</span> <span>elit.</span> <span>Aliquam</span> <span>gravida</span> <span>sem</span> <span>quam,</span> <span>a</span> <span>pulvinar</span> <span>diam</span> <span>mattis</span> <span>at.</span> <span>Fusce</span> <span>sit</span> <span>amet</span> <span>tortor</span> <span>nibh.</span> <span>Nunc</span> <span>vel</span> <span>augue</span> <span>scelerisque,</span> <span>blandit</span> <span>nunc</span> <span>in,</span> <span>ornare</span> <span>diam.</span> <span>Phasellus</span> <span>egestas</span> <span>venenatis</span> <span>ligula,</span> <span>a</span> <span>imperdiet</span> <span>libero</span> <span>pretium</span> <span>non.</span> <span>Etiam</span> <span>id</span> <span>urna</span> <span>ut</span> <span>eros</span> <span>rutrum</span> <span>varius.</span> <span>Donec</span> <span>sit</span> <span>amet</span> <span>ligula</span> <span>blandit,</span> <span>tincidunt</span> <span>massa</span> <span>id,</span> <span>rhoncus</span> <span>eros.</span> <span>Cum</span> <span>sociis</span> <span>natoque</span> <span>penatibus</span> <span>et</span> <span>magnis</span> <span>dis</span> <span>parturient</span> <span>montes,</span> <span>nascetur</span> <span>ridiculus</span> <span>mus.</span>
@@ -48,6 +55,7 @@
   <i>Vivamus</i> <i>et</i> <i>consequat</i> <i>justo.</i> <i>Curabitur</i> <i>dui</i> <i>massa,</i> <i>tempus</i> <i>sed</i> <i>purus</i> <i>quis,</i> <i>aliquam</i> <i>laoreet</i> <i>mi.</i> <i>Praesent</i> <i>ultricies</i> <i>eget</i> <i>arcu</i> <i>quis</i> <i>sollicitudin.</i> <i>In</i> <i>venenatis</i> <i>tempus</i> <i>ligula,</i> <i>in</i> <i>tempus</i> <i>lorem</i> <i>efficitur</i> <i>ut.</i> <i>Morbi</i> <i>convallis</i> <i>dui</i> <i>ut</i> <i>purus</i> <i>suscipit</i> <i>rhoncus.</i> <i>Nam</i> <i>id</i> <i>justo</i> <i>turpis.</i> <i>Quisque</i> <i>commodo</i> <i>orci</i> <i>vel</i> <i>eros</i> <i>ornare</i> <i>ornare.</i> <i>Aenean</i> <i>auctor</i> <i>leo</i> <i>ac</i> <i>condimentum</i> <i>vulputate.</i> <i>Morbi</i> <i>lobortis,</i> <i>felis</i> <i>a</i> <i>ultrices</i> <i>volutpat,</i> <i>mauris</i> <i>tortor</i> <i>blandit</i> <i>sapien,</i> <i>sed</i> <i>ornare</i> <i>orci</i> <i>diam</i> <i>sit</i> <i>amet</i> <i>justo.</i> <i>Maecenas</i> <i>aliquet</i> <i>pharetra</i> <i>condimentum.</i> <i>Praesent</i> <i>in</i> <i>neque</i> <i>gravida,</i> <i>ultricies</i> <i>augue</i> <i>sagittis,</i> <i>rutrum</i> <i>justo.</i>
   Etiam in nisl sed lorem venenatis cursus. Morbi ultrices interdum ipsum, non viverra tellus dictum non. Fusce vitae lacinia purus. Vestibulum eu libero eget odio venenatis malesuada. Nulla ligula purus, facilisis vel venenatis vel, ornare euismod lorem. Sed lacinia fermentum sem, quis posuere urna aliquam non. Fusce et sagittis mauris, non lacinia metus.
 </div>
+<h2>Container including paragraphs (KNOWN ISSUE: ellipsis will be outside of paragraphs)</h2>
 <div class="clamp-me">
   <p>
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.

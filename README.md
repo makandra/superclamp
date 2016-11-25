@@ -48,7 +48,7 @@ We optimized heavily for performance, so code may not be as straight-forward as 
 
 # Tests
 
-- There will be tests. Soon.
+- There will be tests some day.
 
 
 # Known issues
