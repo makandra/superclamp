@@ -3,6 +3,7 @@
 <head>
   <meta charset='utf-8'>
   <meta content='width=device-width, initial-scale=1' name='viewport'>
+  <script src="lib/jquery-1.11.3.js"></script>
   <script src="../dist/superclamp.js"></script>
   <style>
     h2 {
@@ -18,8 +19,8 @@
   </style>
 </head>
 <body>
-<h1>Superclamp (DOM API)</h1>
-<a href="jquery.html">Switch to jQuery bindings</a>
+<h1>Superclamp (jQuery bindings)</h1>
+<a href="index.html">Switch to vanilla DOM API</a>
 <h2>Simple text</h2>
 <div class="clamp-me">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
@@ -87,7 +88,7 @@
   Etiam in nisl sed lorem venenatis cursus. Morbi ultrices interdum ipsum, non viverra tellus dictum non. Fusce vitae lacinia purus. Vestibulum eu libero eget odio venenatis malesuada. Nulla ligula purus, facilisis vel venenatis vel, ornare euismod lorem. Sed lacinia fermentum sem, quis posuere urna aliquam non. Fusce et sagittis mauris, non lacinia metus.
   </p>
 </div>
-<!--
+<!--&lt;!&ndash;-->
 <h2>Many more elements to be clamped, to reveal performance issues</h2>
 <div class="clamp-me">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
@@ -336,10 +337,10 @@
 </div>
 <!--&ndash;&gt;-->
 <script type="text/javascript">
-  document.addEventListener('DOMContentLoaded', function() {
-    Superclamp.register(document.querySelectorAll('.clamp-me'));
-    window.addEventListener('resize', Superclamp.reclampAll);
-  })
+  $(function() {
+    $('.clamp-me').clamp();
+    $(window).on('resize', Superclamp.reclampAll);
+  });
 </script>
 </body>
 </html>

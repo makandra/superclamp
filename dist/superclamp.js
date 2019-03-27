@@ -1,11 +1,11 @@
 
 /*!
- * Superclamp 0.1.5
+ * Superclamp 0.2.0
  * https://github.com/makandra/superclamp
  */
 
 (function() {
-  var $, CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getFragmentData, getFragments, getInnerPosition, getPosition, getStoredDimensions, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions,
+  var CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, Superclamp, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getDimensions, getFragmentData, getFragments, getInnerPosition, getPosition, getStoredDimensions, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions, style, triggerEvent,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     slice = [].slice;
 
@@ -31,49 +31,41 @@
 
   CSS = ".clamp-ellipsis.is-not-required {\n  visibility: hidden !important;\n}\n.clamp-hidden {\n  display: none !important;\n}";
 
-  $ = window.jQuery;
+  Superclamp = (function() {
+    Superclamp.register = function(nodeList) {
+      var i, len, node;
+      debug('.register', nodeList);
+      for (i = 0, len = nodeList.length; i < len; i++) {
+        node = nodeList[i];
+        this.clamp(node);
+      }
+      drainQueue();
+    };
 
-  $("<style type='text/css'>" + CSS + "</style>").appendTo(document.head);
-
-  $.fn.clamp = function() {
-    this.each(function() {
-      return Superclamp.clamp(this);
-    });
-    drainQueue();
-    return this;
-  };
-
-  $(function() {
-    return $(document).on(UPDATE_EVENT_NAME, Superclamp.reclampAll);
-  });
-
-  this.Superclamp = (function() {
     Superclamp.clamp = function(element) {
-      var $element, instance;
+      var instance;
       debug('.clamp', element);
-      $element = $(element);
-      instance = $element.data(INSTANCE_KEY) || new Superclamp($element);
-      return instance.clamp();
+      instance = element[INSTANCE_KEY] || new Superclamp(element);
+      instance.clamp();
     };
 
     Superclamp.reclampAll = function(container) {
-      var $container, element, i, len, ref;
+      var element, i, len, ref;
       if ((container == null) || (container.currentTarget != null)) {
         container = document;
       }
-      $container = $(container);
-      ref = $container.find("[" + READY_ATTRIBUTE_NAME + "]");
+      ref = container.querySelectorAll("[" + READY_ATTRIBUTE_NAME + "]");
       for (i = 0, len = ref.length; i < len; i++) {
         element = ref[i];
         Superclamp.clamp(element);
       }
       drainQueue();
-      return $container;
+      return container;
     };
 
-    function Superclamp($element1) {
+    function Superclamp(element1) {
       var spaceNode;
-      this.$element = $element1;
+      this.element = element1;
       this._clampNode = bind(this._clampNode, this);
       this._checkFit = bind(this._checkFit, this);
       this._unchanged = bind(this._unchanged, this);
@@ -83,21 +75,25 @@
       this._storeDistance = bind(this._storeDistance, this);
       this._updateElementAt = bind(this._updateElementAt, this);
       this._updateEllipsisSize = bind(this._updateEllipsisSize, this);
-      debug('initialize', this.$element);
+      debug('initialize', this.element);
       spaceNode = document.createTextNode(' ');
-      this.$ellipsis = $('<span class="clamp-ellipsis">…</span>');
-      this.$element.append(spaceNode, this.$ellipsis);
-      this.$element.data(INSTANCE_KEY, this);
-      this.$element.attr(READY_ATTRIBUTE_NAME, true);
+      this.ellipsis = document.createElement('span');
+      this.ellipsis.classList.add('clamp-ellipsis');
+      this.ellipsis.innerText = '…';
+      this.element.appendChild(spaceNode);
+      this.element.appendChild(this.ellipsis);
+      this.element[INSTANCE_KEY] = this;
+      this.element.setAttribute(READY_ATTRIBUTE_NAME, true);
+      return;
     }
 
     Superclamp.prototype.clamp = function() {
-      return queue('query', (function(_this) {
+      queue('query', (function(_this) {
         return function() {
           _this._updateEllipsisSize();
           _this._updateElementAt();
           if (_this._unchanged()) {
-            return debug('unchanged', _this.$element);
+            return debug('unchanged', _this.element);
           } else {
             return _this._clampThis();
           }
@@ -106,35 +102,39 @@
     };
 
     Superclamp.prototype._updateEllipsisSize = function() {
-      return storeDimensions(this.$ellipsis);
+      return storeDimensions(this.ellipsis);
     };
 
     Superclamp.prototype._updateElementAt = function() {
-      return this.elementAt = getInnerPosition(this.$element);
+      return this.elementAt = getInnerPosition(this.element);
     };
 
     Superclamp.prototype._storeDistance = function() {
       var distance;
       distance = this._distanceToBottomRight();
       debug('storing distance', distance);
-      return this.$ellipsis.data(DISTANCE_KEY, distance);
+      return this.ellipsis[DISTANCE_KEY] = distance;
     };
 
     Superclamp.prototype._clampThis = function() {
-      log('_clampThis', this.$element);
-      return this._clampNode(this.$element.get(0), (function(_this) {
+      log('_clampThis', this.element);
+      return this._clampNode(this.element, (function(_this) {
         return function(allFit) {
           _this._storeDistance();
           return queue('layout', function() {
-            _this.$ellipsis.toggleClass('is-not-required', allFit);
-            return _this.$element.trigger(DONE_EVENT_NAME);
+            if (allFit) {
+              _this.ellipsis.classList.add('is-not-required');
+            } else {
+              _this.ellipsis.classList.remove('is-not-required');
+            }
+            return triggerEvent(_this.element, DONE_EVENT_NAME);
           });
         };
       })(this));
     };
 
     Superclamp.prototype._getEllipsisAt = function() {
-      return getPosition(this.$ellipsis);
+      return getPosition(this.ellipsis);
     };
 
     Superclamp.prototype._distanceToBottomRight = function() {
@@ -145,7 +145,7 @@
 
     Superclamp.prototype._unchanged = function() {
       var dx1, dx2, dy1, dy2, ref, storedDistance;
-      storedDistance = this.$ellipsis.data(DISTANCE_KEY);
+      storedDistance = this.ellipsis[DISTANCE_KEY];
       if (storedDistance != null) {
         dx1 = storedDistance[0], dy1 = storedDistance[1];
         ref = this._distanceToBottomRight(), dx2 = ref[0], dy2 = ref[1];
@@ -233,18 +233,17 @@
       isTextNode = node.nodeName === '#text';
       return queue('layout', (function(_this) {
         return function() {
-          var $node, contents;
+          var contents;
           if (isTextNode) {
             initializeTextNode(node);
             return findBestFit(getFragments(node), '', allFit);
           } else if (node.nodeName === '#comment') {
 
           } else {
-            $node = $(node);
-            showAll([$node]);
-            contents = getContents($node);
-            if ($node.is(_this.$element)) {
-              contents = contents.slice(0, -2);
+            showAll([node]);
+            contents = getContents(node);
+            if (node === _this.element) {
+              contents = Array.prototype.slice.call(contents, 0, -2);
             }
             return findBestFit(contents, '', allFit);
           }
@@ -262,7 +261,7 @@
   };
 
   queue = function(phase, callback) {
-    return jobQueues[phase].push(callback);
+    jobQueues[phase].push(callback);
   };
 
   drainPhaseQueue = function(phase) {
@@ -280,13 +279,11 @@
   };
 
   drainQueue = function() {
-    var layoutDone, queryDone, results;
-    results = [];
+    var layoutDone, queryDone;
     while (!(layoutDone && queryDone)) {
       layoutDone = drainPhaseQueue('layout');
-      results.push(queryDone = drainPhaseQueue('query'));
+      queryDone = drainPhaseQueue('query');
     }
-    return results;
   };
 
   debug = function() {
@@ -307,25 +304,30 @@
     return (ref = window.console) != null ? typeof ref.log === "function" ? ref.log.apply(ref, args) : void 0 : void 0;
   };
 
-  storeDimensions = function($node) {
-    var height, width;
-    height = $node.height();
-    width = $node.width();
-    $node.data(DIMENSIONS_KEY, [width, height]);
-    debug('storeDimensions', width, height);
+  storeDimensions = function(node) {
+    node[DIMENSIONS_KEY] = getDimensions(node);
+    debug('storeDimensions', node[DIMENSIONS_KEY]);
+  };
+
+  getDimensions = function(node) {
+    var computedStyle, height, width;
+    computedStyle = window.getComputedStyle(node);
+    height = node.offsetHeight - parseFloat(computedStyle.paddingTop) - parseFloat(computedStyle.paddingBottom);
+    width = node.offsetWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight);
+    debug('getDimensions', [height, width]);
     return [width, height];
   };
 
-  getStoredDimensions = function($node) {
-    return $node.data(DIMENSIONS_KEY);
+  getStoredDimensions = function(node) {
+    return node[DIMENSIONS_KEY];
   };
 
-  getPosition = function($node) {
+  getPosition = function(node) {
     var height, position, ref, width;
-    ref = getStoredDimensions($node) || [$node.width(), $node.height()], width = ref[0], height = ref[1];
+    ref = getStoredDimensions(node) || getDimensions(node), width = ref[0], height = ref[1];
     position = {
-      top: $node.prop('offsetTop'),
-      left: $node.prop('offsetLeft')
+      top: node.offsetTop,
+      left: node.offsetLeft
     };
     if (position.bottom == null) {
       position.bottom = position.top + height;
@@ -333,36 +335,37 @@
     if (position.right == null) {
       position.right = position.left + width;
     }
-    debug('getPosition of %o: %o', $node, position);
+    debug('getPosition of %o: %o', node, position);
     return position;
   };
 
-  getInnerPosition = function($node) {
-    var borderBoxSizing, borderWidth, height, left, padding, top, width;
-    borderBoxSizing = $node.css('box-sizing') === 'border-box';
-    top = $node.prop('offsetTop');
-    left = $node.prop('offsetLeft');
-    height = parseInt($node.css('max-height')) || parseInt($node.css('height'));
-    width = parseInt($node.css('max-width')) || parseInt($node.css('width'));
+  getInnerPosition = function(node) {
+    var borderBoxSizing, borderWidth, computedStyle, height, innerPosition, left, padding, top, width;
+    computedStyle = node.currentStyle || window.getComputedStyle(node);
+    borderBoxSizing = computedStyle.boxSizing === 'border-box';
+    top = node.offsetTop;
+    left = node.offsetLeft;
+    height = parseInt(computedStyle.maxHeight) || parseInt(computedStyle.height);
+    width = parseInt(computedStyle.maxWidth) || parseInt(computedStyle.width);
     if (borderBoxSizing) {
       padding = {
-        top: parseInt($node.css('padding-top')) || 0,
-        left: parseInt($node.css('padding-left')) || 0,
-        right: parseInt($node.css('padding-right')) || 0,
-        bottom: parseInt($node.css('padding-bottom')) || 0
+        top: parseInt(computedStyle.paddingTop) || 0,
+        left: parseInt(computedStyle.paddingLeft) || 0,
+        right: parseInt(computedStyle.paddingRight) || 0,
+        bottom: parseInt(computedStyle.paddingBottom) || 0
       };
       borderWidth = {
-        top: parseInt($node.css('border-top-width')) || 0,
-        left: parseInt($node.css('border-left-width')) || 0,
-        right: parseInt($node.css('border-right-width')) || 0,
-        bottom: parseInt($node.css('border-bottom-width')) || 0
+        top: parseInt(computedStyle.borderTopWidth) || 0,
+        left: parseInt(computedStyle.borderLeftWidth) || 0,
+        right: parseInt(computedStyle.borderRightWidth) || 0,
+        bottom: parseInt(computedStyle.borderBottomWidth) || 0
       };
       top += padding.top + borderWidth.top;
       left += padding.left + borderWidth.left;
       width -= padding.left + padding.right + borderWidth.left + borderWidth.right;
       height -= padding.top + padding.bottom + borderWidth.top + borderWidth.bottom;
     }
-    return {
+    innerPosition = {
       top: top,
       left: left,
       right: left + width,
@@ -370,33 +373,33 @@
       width: width,
       height: height
     };
+    return innerPosition;
   };
 
   getFragmentData = function(textNode) {
-    var $parent, index, nodes, values;
-    $parent = $(textNode.parentNode);
-    nodes = $parent.data(FRAGMENT_NODES_KEY) || [];
-    values = $parent.data(FRAGMENT_VALUES_KEY) || [];
-    index = $.inArray(textNode, nodes);
-    return [nodes, values, index, $parent];
+    var index, nodes, parent, values;
+    parent = textNode.parentNode;
+    nodes = parent[FRAGMENT_NODES_KEY] || [];
+    values = parent[FRAGMENT_VALUES_KEY] || [];
+    index = Array.prototype.indexOf.call(nodes, textNode);
+    return [nodes, values, index, parent];
   };
 
   setFragments = function(textNode, fragments) {
-    var $parent, index, nodes, ref, values;
-    ref = getFragmentData(textNode), nodes = ref[0], values = ref[1], index = ref[2], $parent = ref[3];
+    var index, nodes, parent, ref, values;
+    ref = getFragmentData(textNode), nodes = ref[0], values = ref[1], index = ref[2], parent = ref[3];
     if (index < 0) {
       index = nodes.length;
     }
     nodes[index] = textNode;
     values[index] = fragments;
-    $parent.data(FRAGMENT_NODES_KEY, nodes);
-    $parent.data(FRAGMENT_VALUES_KEY, values);
-    return fragments;
+    parent[FRAGMENT_NODES_KEY] = nodes;
+    parent[FRAGMENT_VALUES_KEY] = values;
   };
 
   getFragments = function(textNode) {
-    var $parent, index, nodes, ref, values;
-    ref = getFragmentData(textNode), nodes = ref[0], values = ref[1], index = ref[2], $parent = ref[3];
+    var index, nodes, parent, ref, values;
+    ref = getFragmentData(textNode), nodes = ref[0], values = ref[1], index = ref[2], parent = ref[3];
     return values[index];
   };
 
@@ -404,43 +407,75 @@
     if (getFragments(textNode) == null) {
       setFragments(textNode, textNode.nodeValue.split(/[ \t\r\n]+/));
     }
-    return textNode;
   };
 
-  getContents = function($node) {
-    return $.makeArray($node.get(0).childNodes);
+  getContents = function(node) {
+    return node.childNodes;
   };
 
   hideAll = function(nodes) {
-    var i, len, node, results;
-    results = [];
+    var i, len, node;
+    debug('hideAll', nodes);
     for (i = 0, len = nodes.length; i < len; i++) {
       node = nodes[i];
       if (node.nodeName === '#text') {
         initializeTextNode(node);
-        results.push(node.nodeValue = '');
+        node.nodeValue = '';
       } else {
-        results.push($(node).addClass('clamp-hidden'));
+        node.classList.add('clamp-hidden');
       }
     }
-    return results;
   };
 
   showAll = function(nodes) {
-    var $node, i, len, node, results;
-    results = [];
+    var i, len, node;
+    debug('showAll', nodes);
     for (i = 0, len = nodes.length; i < len; i++) {
       node = nodes[i];
       if (node.nodeName === '#text') {
         initializeTextNode(node);
-        results.push(node.nodeValue = getFragments(node).join(' '));
+        node.nodeValue = getFragments(node).join(' ');
       } else {
-        $node = $(node);
-        $node.removeClass('clamp-hidden');
-        results.push(showAll(getContents($node)));
+        node.classList.remove('clamp-hidden');
+        showAll(getContents(node));
       }
     }
-    return results;
   };
+
+  triggerEvent = function(element, eventName) {
+    var event;
+    if (typeof Event === 'function') {
+      event = new Event('submit');
+    } else {
+      event = document.createEvent('Event');
+      event.initEvent(eventName, true, true);
+    }
+    return element.dispatchEvent(event);
+  };
+
+  style = document.createElement('style');
+
+  style.type = 'text/css';
+
+  style.appendChild(document.createTextNode(CSS));
+
+  document.head.appendChild(style);
+
+  if (typeof jQuery !== 'undefined') {
+    jQuery.fn.clamp = function() {
+      Superclamp.register(this.get());
+      return this;
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    return document.addEventListener(UPDATE_EVENT_NAME, Superclamp.reclampAll);
+  });
+
+  if (typeof module === 'object' && module && typeof module.exports === 'object') {
+    module.exports = Superclamp;
+  } else {
+    window.Superclamp = Superclamp;
+  }
 
 }).call(this);

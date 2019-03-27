@@ -1,0 +1,29 @@
+{
+  "name": "superclamp",
+  "version": "0.2.0",
+  "description": "Cross-browser ellipsis for multi-line texts, optimized for performance. No dependencies.",
+  "main": "dist/superclamp.js",
+  "files": [
+    "dist/superclamp.js",
+    "dist/superclamp.min.js"
+  ],
+  "scripts": {
+    "test": "echo \"See https://github.com/makandra/superclamp for test instructions\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/makandra/superclamp.git"
+  },
+  "keywords": [
+    "line-clamp",
+    "text-truncate"
+  ],
+  "author": "Arne Hartherz <arne.hartherz@makandra.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/makandra/superclamp/issues"
+  },
+  "homepage": "https://github.com/makandra/superclamp",
+  "dependencies": {
+  }
+}

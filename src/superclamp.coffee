@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.1.5
+ * Superclamp 0.2.0
  * https://github.com/makandra/superclamp
 ###
 
@@ -28,50 +28,48 @@ CSS = """
 
 ################################################################################
 
-$ = window.jQuery
+class Superclamp
 
-$("<style type='text/css'>#{CSS}</style>").appendTo(document.head)
-
-$.fn.clamp = ->
-  @each ->
-    Superclamp.clamp(this)
-  drainQueue()
-  @
-
-$ ->
-  $(document).on UPDATE_EVENT_NAME, Superclamp.reclampAll
-
-################################################################################
-
-class @Superclamp
+  @register: (nodeList) ->
+    debug '.register', nodeList
+    for node in nodeList
+      @clamp(node)
+    drainQueue()
+    return
 
   @clamp: (element) ->
     debug '.clamp', element
-    $element = $(element)
 
-    instance = $element.data(INSTANCE_KEY) || new Superclamp($element)
+    instance = element[INSTANCE_KEY] || new Superclamp(element)
     instance.clamp()
+    return
 
   @reclampAll: (container) ->
     # If no container element or an event was given, reclamp the entire document.
     container = document if !container? || container.currentTarget?
 
-    $container = $(container)
-    for element in $container.find("[#{READY_ATTRIBUTE_NAME}]")
+    # Note that keeping elements in an array has no real performance benefit over looking them up by a custom attribute.
+    # In fact, since all data is kept on elements, we do not need to implement a clean-up strategy.
+    for element in container.querySelectorAll("[#{READY_ATTRIBUTE_NAME}]")
       Superclamp.clamp(element)
     drainQueue()
 
-    return $container
+    return container
 
-  constructor: (@$element) ->
-    debug 'initialize', @$element
+  constructor: (@element) ->
+    debug 'initialize', @element
 
     spaceNode = document.createTextNode(' ')
-    @$ellipsis = $('<span class="clamp-ellipsis">…</span>')
-    @$element.append(spaceNode, @$ellipsis)
+    @ellipsis = document.createElement('span')
+    @ellipsis.classList.add('clamp-ellipsis')
+    @ellipsis.innerText = '…'
 
-    @$element.data(INSTANCE_KEY, @)
-    @$element.attr(READY_ATTRIBUTE_NAME, true)
+    @element.appendChild(spaceNode)
+    @element.appendChild(@ellipsis)
+
+    @element[INSTANCE_KEY] = @
+    @element.setAttribute(READY_ATTRIBUTE_NAME, true)
+    return
 
   clamp: ->
     queue 'query', =>
@@ -83,39 +81,44 @@ class @Superclamp
       @_updateElementAt()
 
       if @_unchanged()
-        debug 'unchanged', @$element
+        debug 'unchanged', @element
         # no need to (re)clamp
       else
         @_clampThis()
+    return
 
   _updateEllipsisSize: =>
-    storeDimensions(@$ellipsis)
+    storeDimensions(@ellipsis)
 
   _updateElementAt: =>
-    @elementAt = getInnerPosition(@$element)
+    @elementAt = getInnerPosition(@element)
 
   _storeDistance: =>
     distance = @_distanceToBottomRight()
     debug 'storing distance', distance
-    @$ellipsis.data DISTANCE_KEY, distance
+    @ellipsis[DISTANCE_KEY] = distance
 
   _clampThis: =>
-    log '_clampThis', @$element
-    @_clampNode @$element.get(0), (allFit) =>
+    log '_clampThis', @element
+    @_clampNode @element, (allFit) =>
       @_storeDistance()
       queue 'layout', =>
-        @$ellipsis.toggleClass('is-not-required', allFit)
-        @$element.trigger(DONE_EVENT_NAME)
+        if (allFit)
+          @ellipsis.classList.add('is-not-required')
+        else
+          @ellipsis.classList.remove('is-not-required')
+
+        triggerEvent(@element, DONE_EVENT_NAME)
 
   _getEllipsisAt: =>
-    getPosition(@$ellipsis)
+    getPosition(@ellipsis)
 
   _distanceToBottomRight: =>
     ellipsisAt = @_getEllipsisAt()
     [@elementAt.right - ellipsisAt.right, @elementAt.bottom - ellipsisAt.bottom]
 
   _unchanged: =>
-    storedDistance = @$ellipsis.data(DISTANCE_KEY)
+    storedDistance = @ellipsis[DISTANCE_KEY]
 
     if storedDistance?
       [dx1, dy1] = storedDistance
@@ -190,11 +193,10 @@ class @Superclamp
       else if node.nodeName == '#comment'
         # ignore
       else
-        $node = $(node)
-        showAll [$node]
-        contents = getContents($node)
-        if $node.is(@$element)
-          contents = contents[0...-2] # do not clamp ellipsis and our space node
+        showAll [node]
+        contents = getContents(node)
+        if node == @element
+          contents = Array.prototype.slice.call(contents, 0, -2) # do not clamp ellipsis and our space node
         findBestFit(contents, '', allFit)
 
 ################################################################################
@@ -205,21 +207,23 @@ jobQueues =
 
 queue = (phase, callback) ->
   jobQueues[phase].push callback
+  return
 
 drainPhaseQueue = (phase) ->
   jobs = jobQueues[phase]
   if jobs.length == 0
-    true
+    return true
   else
     debug 'draining', phase
     while job = jobs.shift()
       job()
-    false
+    return false
 
 drainQueue = ->
   until layoutDone && queryDone
     layoutDone = drainPhaseQueue('layout')
     queryDone = drainPhaseQueue('query')
+  return
 
 debug = (args...) ->
   return unless DEBUG
@@ -229,109 +233,152 @@ log = (args...) ->
   return unless LOG
   window.console?.log?(args...)
 
-storeDimensions = ($node) ->
-  height = $node.height()
-  width = $node.width()
-  $node.data(DIMENSIONS_KEY, [width, height])
-  debug 'storeDimensions', width, height
+storeDimensions = (node) ->
+  node[DIMENSIONS_KEY] = getDimensions(node)
+  debug 'storeDimensions', node[DIMENSIONS_KEY]
+  return
+
+getDimensions = (node) ->
+  computedStyle = window.getComputedStyle(node)
+
+  height = node.offsetHeight - parseFloat(computedStyle.paddingTop) - parseFloat(computedStyle.paddingBottom)
+  width = node.offsetWidth - parseFloat(computedStyle.paddingLeft) - parseFloat(computedStyle.paddingRight)
+  debug 'getDimensions', [height, width]
   [width, height]
 
-getStoredDimensions = ($node) ->
-  $node.data(DIMENSIONS_KEY)
+getStoredDimensions = (node) ->
+  return node[DIMENSIONS_KEY]
 
-getPosition = ($node) ->
-  [width, height] = getStoredDimensions($node) || [$node.width(), $node.height()]
+getPosition = (node) ->
+  [width, height] = getStoredDimensions(node) || getDimensions(node)
   position =
-    top: $node.prop('offsetTop')
-    left: $node.prop('offsetLeft')
+    top: node.offsetTop
+    left: node.offsetLeft
   position.bottom ?= position.top + height
   position.right ?= position.left + width
-  debug 'getPosition of %o: %o', $node, position
+  debug 'getPosition of %o: %o', node, position
   position
 
-getInnerPosition = ($node) ->
-  borderBoxSizing = $node.css('box-sizing') == 'border-box'
+getInnerPosition = (node) ->
+  computedStyle = node.currentStyle || window.getComputedStyle(node) # IE's getComputedStyle automatically deducts paddings. currentStyle is IE-only but behaves like getComputedStyle in real browsers.
+  borderBoxSizing = computedStyle.boxSizing == 'border-box'
 
-  top = $node.prop('offsetTop')
-  left = $node.prop('offsetLeft')
+  top = node.offsetTop
+  left = node.offsetLeft
 
   # To compute the fillable inner area, we consider the element's maximum
   # width/height, if available. This allows handling growing elements.
-  height = parseInt($node.css('max-height')) || parseInt($node.css('height'))
-  width = parseInt($node.css('max-width')) || parseInt($node.css('width'))
+  height = parseInt(computedStyle.maxHeight) || parseInt(computedStyle.height)
+  width = parseInt(computedStyle.maxWidth) || parseInt(computedStyle.width)
 
   if borderBoxSizing
     # When an element's box-sizing is set to "border-box", its padding and
     # borders are included in its width/height.
     padding =
-      top: parseInt($node.css('padding-top')) || 0
-      left: parseInt($node.css('padding-left')) || 0
-      right: parseInt($node.css('padding-right')) || 0
-      bottom: parseInt($node.css('padding-bottom')) || 0
+      top: parseInt(computedStyle.paddingTop) || 0
+      left: parseInt(computedStyle.paddingLeft) || 0
+      right: parseInt(computedStyle.paddingRight) || 0
+      bottom: parseInt(computedStyle.paddingBottom) || 0
     borderWidth =
-      top: parseInt($node.css('border-top-width')) || 0
-      left: parseInt($node.css('border-left-width')) || 0
-      right: parseInt($node.css('border-right-width')) || 0
-      bottom: parseInt($node.css('border-bottom-width')) || 0
+      top: parseInt(computedStyle.borderTopWidth) || 0
+      left: parseInt(computedStyle.borderLeftWidth) || 0
+      right: parseInt(computedStyle.borderRightWidth) || 0
+      bottom: parseInt(computedStyle.borderBottomWidth) || 0
     top += (padding.top + borderWidth.top)
     left += (padding.left + borderWidth.left)
     width -= (padding.left + padding.right + borderWidth.left + borderWidth.right)
     height -= (padding.top + padding.bottom + borderWidth.top + borderWidth.bottom)
 
-  top: top
-  left: left
-  right: left + width
-  bottom: top + height
-  width: width
-  height: height
+  innerPosition =
+    top: top
+    left: left
+    right: left + width
+    bottom: top + height
+    width: width
+    height: height
+
+  return innerPosition
 
 getFragmentData = (textNode) ->
-  $parent = $(textNode.parentNode)
-  nodes = $parent.data(FRAGMENT_NODES_KEY) || []
-  values = $parent.data(FRAGMENT_VALUES_KEY) || []
-  index = $.inArray(textNode, nodes)
+  parent = textNode.parentNode
+  nodes = parent[FRAGMENT_NODES_KEY] || []
+  values = parent[FRAGMENT_VALUES_KEY] || []
+  index = Array.prototype.indexOf.call(nodes, textNode)
 
-  [nodes, values, index, $parent]
+  [nodes, values, index, parent]
 
 setFragments = (textNode, fragments) ->
-  [nodes, values, index, $parent] = getFragmentData(textNode)
+  [nodes, values, index, parent] = getFragmentData(textNode)
   index = nodes.length if index < 0
 
   nodes[index] = textNode
   values[index] = fragments
 
-  $parent.data(FRAGMENT_NODES_KEY, nodes)
-  $parent.data(FRAGMENT_VALUES_KEY, values)
-
-  fragments
+  parent[FRAGMENT_NODES_KEY] = nodes
+  parent[FRAGMENT_VALUES_KEY] = values
+  return
 
 getFragments = (textNode) ->
-  [nodes, values, index, $parent] = getFragmentData(textNode)
+  [nodes, values, index, parent] = getFragmentData(textNode)
   values[index]
 
 initializeTextNode = (textNode) ->
   unless getFragments(textNode)?
     # happens only once, so our nodeValue was not changed
     setFragments textNode, textNode.nodeValue.split(/[ \t\r\n]+/)
-  textNode
+  return
 
-getContents = ($node) ->
-  $.makeArray($node.get(0).childNodes)
+getContents = (node) ->
+  node.childNodes
 
 hideAll = (nodes) ->
+  debug 'hideAll', nodes
   for node in nodes
     if node.nodeName == '#text'
       initializeTextNode(node)
       node.nodeValue = ''
     else
-      $(node).addClass('clamp-hidden')
+      node.classList.add('clamp-hidden')
+  return
 
 showAll = (nodes) ->
+  debug 'showAll', nodes
   for node in nodes
     if node.nodeName == '#text'
       initializeTextNode(node)
       node.nodeValue = getFragments(node).join(' ')
     else
-      $node = $(node)
-      $node.removeClass('clamp-hidden')
-      showAll(getContents($node))
+      node.classList.remove('clamp-hidden')
+      showAll(getContents(node))
+  return
+
+triggerEvent = (element, eventName) ->
+  if typeof(Event) == 'function'
+     event = new Event('submit')
+  else
+     event = document.createEvent('Event')
+     event.initEvent(eventName, true, true)
+
+  element.dispatchEvent(event)
+
+################################################################################
+
+style = document.createElement('style')
+style.type = 'text/css'
+style.appendChild(document.createTextNode(CSS))
+document.head.appendChild(style)
+
+if typeof(jQuery) != 'undefined'
+  jQuery.fn.clamp = ->
+    Superclamp.register(this.get())
+    return this
+
+document.addEventListener 'DOMContentLoaded', ->
+  document.addEventListener(UPDATE_EVENT_NAME, Superclamp.reclampAll)
+
+################################################################################
+
+if (typeof module == 'object' && module && typeof module.exports == 'object')
+  module.exports = Superclamp
+else
+  window.Superclamp = Superclamp
