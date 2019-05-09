@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.2.0
+ * Superclamp 0.2.1
  * https://github.com/makandra/superclamp
 ###
 
@@ -260,7 +260,8 @@ getPosition = (node) ->
   position
 
 getInnerPosition = (node) ->
-  computedStyle = node.currentStyle || window.getComputedStyle(node) # IE's getComputedStyle automatically deducts paddings. currentStyle is IE-only but behaves like getComputedStyle in real browsers.
+  isIE = !!node.currentStyle
+  computedStyle = window.getComputedStyle(node)
   borderBoxSizing = computedStyle.boxSizing == 'border-box'
 
   top = node.offsetTop
@@ -284,10 +285,15 @@ getInnerPosition = (node) ->
       left: parseInt(computedStyle.borderLeftWidth) || 0
       right: parseInt(computedStyle.borderRightWidth) || 0
       bottom: parseInt(computedStyle.borderBottomWidth) || 0
-    top += (padding.top + borderWidth.top)
-    left += (padding.left + borderWidth.left)
-    width -= (padding.left + padding.right + borderWidth.left + borderWidth.right)
-    height -= (padding.top + padding.bottom + borderWidth.top + borderWidth.bottom)
+
+    unless isIE
+      # IE's getComputedStyle (wrongly) deducts paddings and border widths from element dimensions.
+      # We can not use IE's "currentStyle" node property as it won't convert rems and other non-px sizes to px.
+      # Since we are only interesten in an element's inner dimensions, we simply skip this step for IE.
+      top += (padding.top + borderWidth.top)
+      left += (padding.left + borderWidth.left)
+      width -= (padding.left + padding.right + borderWidth.left + borderWidth.right)
+      height -= (padding.top + padding.bottom + borderWidth.top + borderWidth.bottom)
 
   innerPosition =
     top: top

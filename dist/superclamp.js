@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.2.0
+ * Superclamp 0.2.1
  * https://github.com/makandra/superclamp
  */
 
@@ -340,8 +340,9 @@
   };
 
   getInnerPosition = function(node) {
-    var borderBoxSizing, borderWidth, computedStyle, height, innerPosition, left, padding, top, width;
-    computedStyle = node.currentStyle || window.getComputedStyle(node);
+    var borderBoxSizing, borderWidth, computedStyle, height, innerPosition, isIE, left, padding, top, width;
+    isIE = !!node.currentStyle;
+    computedStyle = window.getComputedStyle(node);
     borderBoxSizing = computedStyle.boxSizing === 'border-box';
     top = node.offsetTop;
     left = node.offsetLeft;
@@ -360,10 +361,12 @@
         right: parseInt(computedStyle.borderRightWidth) || 0,
         bottom: parseInt(computedStyle.borderBottomWidth) || 0
       };
-      top += padding.top + borderWidth.top;
-      left += padding.left + borderWidth.left;
-      width -= padding.left + padding.right + borderWidth.left + borderWidth.right;
-      height -= padding.top + padding.bottom + borderWidth.top + borderWidth.bottom;
+      if (!isIE) {
+        top += padding.top + borderWidth.top;
+        left += padding.left + borderWidth.left;
+        width -= padding.left + padding.right + borderWidth.left + borderWidth.right;
+        height -= padding.top + padding.bottom + borderWidth.top + borderWidth.bottom;
+      }
     }
     innerPosition = {
       top: top,
