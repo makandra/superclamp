@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.2.1
+ * Superclamp 0.2.2
  * https://github.com/makandra/superclamp
  */
 
@@ -413,7 +413,7 @@
   };
 
   getContents = function(node) {
-    return node.childNodes;
+    return Array.prototype.slice.call(node.childNodes);
   };
 
   hideAll = function(nodes) {
