@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.2.1
+ * Superclamp 0.2.2
  * https://github.com/makandra/superclamp
 ###
 
@@ -335,7 +335,7 @@ initializeTextNode = (textNode) ->
   return
 
 getContents = (node) ->
-  node.childNodes
+  Array.prototype.slice.call(node.childNodes)
 
 hideAll = (nodes) ->
   debug 'hideAll', nodes
