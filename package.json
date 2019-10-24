@@ -1,6 +1,6 @@
 {
   "name": "superclamp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Cross-browser ellipsis for multi-line texts, optimized for performance. No dependencies.",
   "main": "dist/superclamp.js",
   "files": [

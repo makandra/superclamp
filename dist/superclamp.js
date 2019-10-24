@@ -1,6 +1,6 @@
 
 /*!
- * Superclamp 0.2.2
+ * Superclamp 0.2.3
  * https://github.com/makandra/superclamp
  */
 
@@ -33,13 +33,25 @@
 
   Superclamp = (function() {
     Superclamp.register = function(nodeList) {
-      var i, len, node;
+      var clampedNodes, deferredNodes, i, len, node, previousSiblingIsBeingClamped, previousSiblingWillBeClamped;
       debug('.register', nodeList);
+      clampedNodes = [];
+      deferredNodes = [];
       for (i = 0, len = nodeList.length; i < len; i++) {
         node = nodeList[i];
-        this.clamp(node);
+        previousSiblingIsBeingClamped = clampedNodes.indexOf(node.previousElementSibling) >= 0;
+        previousSiblingWillBeClamped = deferredNodes.indexOf(node.previousElementSibling) >= 0;
+        if (previousSiblingIsBeingClamped || previousSiblingWillBeClamped) {
+          deferredNodes.push(node);
+        } else {
+          this.clamp(node);
+          clampedNodes.push(node);
+        }
       }
       drainQueue();
+      if (deferredNodes.length > 0) {
+        this.register(deferredNodes);
+      }
     };
 
     Superclamp.clamp = function(element) {

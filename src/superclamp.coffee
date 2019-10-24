@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.2.2
+ * Superclamp 0.2.3
  * https://github.com/makandra/superclamp
 ###
 
@@ -32,9 +32,20 @@ class Superclamp
 
   @register: (nodeList) ->
     debug '.register', nodeList
+    # Subsequent nodes cannot be clamped in one iteration, as it would invalidate the bounding box computation
+    clampedNodes = []
+    deferredNodes = []
     for node in nodeList
-      @clamp(node)
+      previousSiblingIsBeingClamped = clampedNodes.indexOf(node.previousElementSibling) >= 0
+      previousSiblingWillBeClamped = deferredNodes.indexOf(node.previousElementSibling) >= 0
+      if previousSiblingIsBeingClamped || previousSiblingWillBeClamped
+        deferredNodes.push(node)
+      else
+        @clamp(node)
+        clampedNodes.push(node);
     drainQueue()
+    if deferredNodes.length > 0
+      @register(deferredNodes)
     return
 
   @clamp: (element) ->
