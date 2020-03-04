@@ -33,23 +33,23 @@
 
   Superclamp = (function() {
     Superclamp.register = function(nodeList) {
-      var clampedNodes, deferredNodes, i, len, node, previousSiblingIsBeingClamped, previousSiblingWillBeClamped;
+      var clampedNodes, deferredNodes, that;
       debug('.register', nodeList);
-      clampedNodes = [];
-      deferredNodes = [];
-      for (i = 0, len = nodeList.length; i < len; i++) {
-        node = nodeList[i];
-        previousSiblingIsBeingClamped = clampedNodes.indexOf(node.previousElementSibling) >= 0;
-        previousSiblingWillBeClamped = deferredNodes.indexOf(node.previousElementSibling) >= 0;
-        if (previousSiblingIsBeingClamped || previousSiblingWillBeClamped) {
-          deferredNodes.push(node);
+      clampedNodes = new Set();
+      deferredNodes = new Set();
+      that = this;
+      nodeList.forEach(function(node) {
+        var previousNode;
+        previousNode = node.previousElementSibling;
+        if (clampedNodes.has(previousNode) || deferredNodes.has(previousNode)) {
+          return deferredNodes.add(node);
         } else {
-          this.clamp(node);
-          clampedNodes.push(node);
+          that.clamp(node);
+          return clampedNodes.add(node);
         }
-      }
+      });
       drainQueue();
-      if (deferredNodes.length > 0) {
+      if (deferredNodes.size > 0) {
         this.register(deferredNodes);
       }
     };

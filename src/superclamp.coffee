@@ -33,18 +33,19 @@ class Superclamp
   @register: (nodeList) ->
     debug '.register', nodeList
     # Subsequent nodes cannot be clamped in one iteration, as it would invalidate the bounding box computation
-    clampedNodes = []
-    deferredNodes = []
-    for node in nodeList
-      previousSiblingIsBeingClamped = clampedNodes.indexOf(node.previousElementSibling) >= 0
-      previousSiblingWillBeClamped = deferredNodes.indexOf(node.previousElementSibling) >= 0
-      if previousSiblingIsBeingClamped || previousSiblingWillBeClamped
-        deferredNodes.push(node)
+    clampedNodes = new Set()
+    deferredNodes = new Set()
+    that = @
+
+    nodeList.forEach (node) ->
+      previousNode = node.previousElementSibling
+      if clampedNodes.has(previousNode) || deferredNodes.has(previousNode)
+        deferredNodes.add(node)
       else
-        @clamp(node)
-        clampedNodes.push(node);
+        that.clamp(node)
+        clampedNodes.add(node);
     drainQueue()
-    if deferredNodes.length > 0
+    if deferredNodes.size > 0
       @register(deferredNodes)
     return
 
