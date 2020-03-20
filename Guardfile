@@ -30,7 +30,8 @@ require 'uglifier'
 class Guard::Minify < Guard::Plugin; end
 
 guard :minify do
-  watch(%r((dist/.+?)\.js)) do |filename, prefix|
+  watch(%r((dist/.+?)\.js)) do |match_result|
+    filename, prefix = match_result[0], match_result[1]
     unless filename =~ /\.min\.js$/
       minified_filename = "#{prefix}.min.js"
       javascript = File.read(filename)

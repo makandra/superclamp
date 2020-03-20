@@ -1,11 +1,11 @@
 
 /*!
- * Superclamp 0.2.2
+ * Superclamp 0.2.3
  * https://github.com/makandra/superclamp
  */
 
 (function() {
-  var CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, Superclamp, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getDimensions, getFragmentData, getFragments, getInnerPosition, getPosition, getStoredDimensions, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions, style, triggerEvent,
+  var CSS, DEBUG, DIMENSIONS_KEY, DISTANCE_KEY, DONE_EVENT_NAME, FRAGMENT_NODES_KEY, FRAGMENT_VALUES_KEY, INSTANCE_KEY, LOG, READY_ATTRIBUTE_NAME, STASHED_STYLE, Superclamp, UPDATE_EVENT_NAME, debug, drainPhaseQueue, drainQueue, getContents, getDimensions, getFragmentData, getFragments, getInnerPosition, getPosition, getStoredDimensions, hideAll, initializeTextNode, jobQueues, log, queue, setFragments, showAll, storeDimensions, style, triggerEvent,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     slice = [].slice;
 
@@ -28,6 +28,8 @@
   FRAGMENT_NODES_KEY = 'superclamp:fragmentNodes';
 
   FRAGMENT_VALUES_KEY = 'superclamp:fragmentValues';
+
+  STASHED_STYLE = 'superclamp:stashedStyle';
 
   CSS = ".clamp-ellipsis.is-not-required {\n  visibility: hidden !important;\n}\n.clamp-hidden {\n  display: none !important;\n}";
 
@@ -75,6 +77,10 @@
       this._storeDistance = bind(this._storeDistance, this);
       this._updateElementAt = bind(this._updateElementAt, this);
       this._updateEllipsisSize = bind(this._updateEllipsisSize, this);
+      this._unsetTemporaryStyle = bind(this._unsetTemporaryStyle, this);
+      this._setTemporaryStyle = bind(this._setTemporaryStyle, this);
+      this._unsetTemporaryDimensions = bind(this._unsetTemporaryDimensions, this);
+      this._setTemporaryDimensions = bind(this._setTemporaryDimensions, this);
       debug('initialize', this.element);
       spaceNode = document.createTextNode(' ');
       this.ellipsis = document.createElement('span');
@@ -90,15 +96,55 @@
     Superclamp.prototype.clamp = function() {
       queue('query', (function(_this) {
         return function() {
+          _this._setTemporaryDimensions();
           _this._updateEllipsisSize();
           _this._updateElementAt();
           if (_this._unchanged()) {
-            return debug('unchanged', _this.element);
+            debug('unchanged', _this.element);
+            _this._unsetTemporaryDimensions();
           } else {
-            return _this._clampThis();
+            _this._clampThis();
           }
         };
       })(this));
+    };
+
+    Superclamp.prototype._setTemporaryDimensions = function() {
+      var computedStyle, height, maxHeight, maxWidth, width;
+      computedStyle = window.getComputedStyle(this.element);
+      maxHeight = parseInt(computedStyle.maxHeight);
+      maxWidth = parseInt(computedStyle.maxWidth);
+      height = parseInt(computedStyle.height);
+      width = parseInt(computedStyle.width);
+      if (maxHeight && height < maxHeight) {
+        this._setTemporaryStyle('height', height + "px");
+      }
+      if (maxWidth && width < maxWidth) {
+        this._setTemporaryStyle('width', width + "px");
+      }
+    };
+
+    Superclamp.prototype._unsetTemporaryDimensions = function() {
+      this._unsetTemporaryStyle('height');
+      this._unsetTemporaryStyle('width');
+    };
+
+    Superclamp.prototype._setTemporaryStyle = function(styleName, value) {
+      var stashedPropertyName;
+      stashedPropertyName = STASHED_STYLE + ":" + styleName;
+      if (!this.element.hasOwnProperty(stashedPropertyName)) {
+        this.element[stashedPropertyName] = this.element.style[styleName];
+      }
+      this.element.style[styleName] = value;
+    };
+
+    Superclamp.prototype._unsetTemporaryStyle = function(styleName) {
+      var stashedPropertyName;
+      stashedPropertyName = STASHED_STYLE + ":" + styleName;
+      if (this.element.hasOwnProperty(stashedPropertyName)) {
+        this.element.style[styleName] = this.element[stashedPropertyName];
+        delete this.element[stashedPropertyName];
+      }
     };
 
     Superclamp.prototype._updateEllipsisSize = function() {
@@ -120,6 +166,7 @@
       log('_clampThis', this.element);
       return this._clampNode(this.element, (function(_this) {
         return function(allFit) {
+          _this._unsetTemporaryDimensions();
           _this._storeDistance();
           return queue('layout', function() {
             if (allFit) {

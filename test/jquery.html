@@ -5,18 +5,7 @@
   <meta content='width=device-width, initial-scale=1' name='viewport'>
   <script src="lib/jquery-1.11.3.js"></script>
   <script src="../dist/superclamp.js"></script>
-  <style>
-    h2 {
-      margin: 0.5em 0 0.1em;
-    }
-    .clamp-me {
-      box-sizing: border-box;
-      outline: 1px dashed red;
-      height: 200px;
-      max-width: 800px;
-      padding: 5px 25px 10px 80px;
-    }
-  </style>
+  <link href="test.css" media="all" rel="stylesheet" type="text/css" />
 </head>
 <body>
 <h1>Superclamp (jQuery bindings)</h1>
@@ -96,7 +85,26 @@
   Etiam in nisl sed lorem venenatis cursus. Morbi ultrices interdum ipsum, non viverra tellus dictum non. Fusce vitae lacinia purus. Vestibulum eu libero eget odio venenatis malesuada. Nulla ligula purus, facilisis vel venenatis vel, ornare euismod lorem. Sed lacinia fermentum sem, quis posuere urna aliquam non. Fusce et sagittis mauris, non lacinia metus.
   </p>
 </div>
-<!--&lt;!&ndash;-->
+<h2>Container including nested elements</h2>
+<div class="clamp-me">
+  <div class="nested-container">
+    <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+    </p><p>
+    Quisque hendrerit turpis sit amet enim auctor, sed posuere libero hendrerit. In ante justo, dignissim eget sapien eu, interdum pulvinar erat. Vestibulum non fermentum mi, ut convallis libero.
+    </p>
+  </div>
+</div>
+<h2>Subsequently clamped items</h2>
+<div>
+  <div class="clamp-me -max-height" style="line-height: 24px;">This should <strong>not</strong> be clamped. Lorem ipsum dolor sit amet, consectetur adipiscing elit. elit. Aliquam gravida sem quam</div>
+  <div class="clamp-me -max-height" style="line-height: 24px;">This should be clamped:  Pellentesque ut fringilla lacus. Donec posuere efficitur odio quis feugiat. Suspendisse non sollicitudin orci. Vestibulum at ornare eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam in justo a nisl tristique hendrerit vel sit amet urna. Ut posuere tortor ornare sagittis commodo. Proin placerat leo eu convallis dictum.</div>
+  <div class="clamp-me -max-height" style="line-height: 24px;">This should be clamped:  Pellentesque ut fringilla lacus. Donec posuere efficitur odio quis feugiat. Suspendisse non sollicitudin orci. Vestibulum at ornare eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam in justo a nisl tristique hendrerit vel sit amet urna. Ut posuere tortor ornare sagittis commodo. Proin placerat leo eu convallis dictum.</div>
+  <div class="clamp-me -max-height" style="line-height: 24px;">This should be clamped:  Pellentesque ut fringilla lacus. Donec posuere efficitur odio quis feugiat. Suspendisse non sollicitudin orci. Vestibulum at ornare eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam in justo a nisl tristique hendrerit vel sit amet urna. Ut posuere tortor ornare sagittis commodo. Proin placerat leo eu convallis dictum.</div>
+  <div style="line-height: 24px;">This should <strong>not</strong> be clamped. It is just an element without <code>max-height</code> between other elements that have a given <code>max-height</code></div>
+  <div class="clamp-me -max-height" style="line-height: 24px;">This should be clamped:  Pellentesque ut fringilla lacus. Donec posuere efficitur odio quis feugiat. Suspendisse non sollicitudin orci. Vestibulum at ornare eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aliquam in justo a nisl tristique hendrerit vel sit amet urna. Ut posuere tortor ornare sagittis commodo. Proin placerat leo eu convallis dictum.</div>
+</div>
+<!--
 <h2>Many more elements to be clamped, to reveal performance issues</h2>
 <div class="clamp-me">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam gravida sem quam, a pulvinar diam mattis at. Fusce sit amet tortor nibh. Nunc vel augue scelerisque, blandit nunc in, ornare diam. Phasellus egestas venenatis ligula, a imperdiet libero pretium non. Etiam id urna ut eros rutrum varius. Donec sit amet ligula blandit, tincidunt massa id, rhoncus eros. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.

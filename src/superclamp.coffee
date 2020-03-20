@@ -1,5 +1,5 @@
 ###!
- * Superclamp 0.2.2
+ * Superclamp 0.2.3
  * https://github.com/makandra/superclamp
 ###
 
@@ -16,6 +16,7 @@ DIMENSIONS_KEY = 'superclamp:dimensions'
 DISTANCE_KEY = 'superclamp:distanceToBottomRight'
 FRAGMENT_NODES_KEY = 'superclamp:fragmentNodes'
 FRAGMENT_VALUES_KEY = 'superclamp:fragmentValues'
+STASHED_STYLE = 'superclamp:stashedStyle'
 
 CSS = """
       .clamp-ellipsis.is-not-required {
@@ -34,6 +35,7 @@ class Superclamp
     debug '.register', nodeList
     for node in nodeList
       @clamp(node)
+
     drainQueue()
     return
 
@@ -77,14 +79,50 @@ class Superclamp
       # font face/size may have changed. Its dimensions are required to
       # properly calculate if our contents have changed.
       # We also need to update our element position to compare against.
+      @_setTemporaryDimensions()
       @_updateEllipsisSize()
       @_updateElementAt()
 
       if @_unchanged()
-        debug 'unchanged', @element
         # no need to (re)clamp
+        debug 'unchanged', @element
+        @_unsetTemporaryDimensions()
       else
         @_clampThis()
+      return
+    return
+
+  _setTemporaryDimensions: =>
+    computedStyle = window.getComputedStyle(@element)
+
+    maxHeight = parseInt(computedStyle.maxHeight)
+    maxWidth = parseInt(computedStyle.maxWidth)
+    height = parseInt(computedStyle.height)
+    width = parseInt(computedStyle.width)
+
+    if maxHeight && height < maxHeight
+      @_setTemporaryStyle('height', "#{height}px")
+    if maxWidth && width < maxWidth
+      @_setTemporaryStyle('width', "#{width}px")
+    return
+
+  _unsetTemporaryDimensions: =>
+    @_unsetTemporaryStyle('height')
+    @_unsetTemporaryStyle('width')
+    return
+
+  _setTemporaryStyle: (styleName, value) =>
+    stashedPropertyName = "#{STASHED_STYLE}:#{styleName}"
+    unless @element.hasOwnProperty(stashedPropertyName)
+      @element[stashedPropertyName] = @element.style[styleName]
+    @element.style[styleName] = value
+    return
+
+  _unsetTemporaryStyle: (styleName) =>
+    stashedPropertyName = "#{STASHED_STYLE}:#{styleName}"
+    if @element.hasOwnProperty(stashedPropertyName)
+      @element.style[styleName] = @element[stashedPropertyName]
+      delete @element[stashedPropertyName]
     return
 
   _updateEllipsisSize: =>
@@ -101,6 +139,7 @@ class Superclamp
   _clampThis: =>
     log '_clampThis', @element
     @_clampNode @element, (allFit) =>
+      @_unsetTemporaryDimensions()
       @_storeDistance()
       queue 'layout', =>
         if (allFit)
