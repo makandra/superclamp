@@ -39,7 +39,7 @@ GEM
     rb-inotify (0.10.1)
       ffi (~> 1.0)
     shellany (0.0.1)
-    thor (1.0.1)
+    thor (1.4.0)
     uglifier (4.2.0)
       execjs (>= 0.3.0, < 3)
 
